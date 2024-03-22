@@ -4,18 +4,33 @@ import java.lang.reflect.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class JsonReflect<T> {
+public class JsonReflect {
 
     private Object object;
 
+    // constructors
     public JsonReflect(Object object) {
         this.object = object;
     }
+
+    public JsonReflect() {
+        this.object = null;
+    }
+
+    // object getter and setter
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
+    //SERIALIZATION
 
     // method to acquire all the fields of an object
     private Map<String, Object> collectFields() {  
@@ -33,12 +48,17 @@ public class JsonReflect<T> {
         return fields;
     }     
     
-    //method to write the json representation of an object
+    // method to write the json representation of an object
     public String toJson() {
         Map<String, Object> fields = collectFields();
         String jsonRepresentation = "{";
         for (Map.Entry<String, Object> entry : fields.entrySet()) {
-            jsonRepresentation += "\"" + entry.getKey() + "\":\"" + entry.getValue() + "\",";
+            //check if the value of the field is a string and add quotes if it is
+            if (entry.getValue() instanceof String) {
+                jsonRepresentation += "\"" + entry.getKey() + "\":\"" + entry.getValue() + "\",";
+            } else {
+                jsonRepresentation += "\"" + entry.getKey() + "\":" + entry.getValue() + ",";
+            }
         }
         jsonRepresentation = jsonRepresentation.substring(0, jsonRepresentation.length() - 1);
         jsonRepresentation += "}";
@@ -55,13 +75,14 @@ public class JsonReflect<T> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        
         System.out.println("Saved to file: " + fileName);
     }  
     
-
+    //DESERIALIZATION
+    
     // a method to convert json string to a Map
-    public static Map<String, Object> jsonToMap(String json) {
+    public Map<String, Object> jsonToMap(String json) {
         
         Map<String, Object> map = new HashMap<>();
 
@@ -72,7 +93,7 @@ public class JsonReflect<T> {
             Object value = keyValue[1].replace("\"", "");
             map.put(key, value);
         }
-        
+
         return map;
     }
 
